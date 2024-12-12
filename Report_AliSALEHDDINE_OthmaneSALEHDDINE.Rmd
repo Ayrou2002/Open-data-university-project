@@ -1,0 +1,252 @@
+---
+title: "Women representation in french media"
+author: "SALEHDDINE Ali, SALEHDDINE Othmane"
+date: "2024-12-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Context
+  Information medias are a very efficient way of informing the population of what is happening in their society and in the world. It gave many opportunities for many people to express themselves. However in its beginnings, it was very limited for women as they didn't have the same contribution as men in the medias. In the recent years, women gained many importance in public functions. Although women representation in french media remains a heated discussion even today. Many studies have been done to analyse the representation of women in the medias.
+ 
+  * With this data, our goal is to see if this evolution was translated in their involvement in medias like radio and television. 
+   + Did the speaking time of women increase since the last century ? 
+   + How is it comparable to the speaking time of men ? 
+   + Finally what genres are women the most represented ?
+   
+```{r, include=FALSE}
+genre_speech <- read.csv('C:\\Users\\pc\\Desktop\\R_report\\ina-csa-parole-femmes-genreprogramme (3).csv')
+year_speech<- read.csv('C:\\Users\\pc\\Desktop\\R_report\\20190308-years.csv')
+menwomen_speech<- read.csv('C:\\Users\\pc\\Desktop\\R_report\\ina-csa-parole-femmes-chaines.csv')
+```
+
+### Tables analysed 
+
+   The first data we will use is stored in this table. The columns that interest us the most here are: channel_name, year, women_expression_rate in %. It is to show the evolution of women speaking time in the different french channels (radio or tv) over the years (mostly from 1995 to 2020).
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE}
+library(DT) 
+datatable(year_speech, 
+    options = list(
+    pageLength = 5,  
+    searchHighlight = TRUE,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+) %>%
+  formatStyle(
+    'channel_name', 
+    backgroundColor = "aquamarine"  
+  ) %>%
+  formatStyle(
+    'year', 
+    backgroundColor = "aquamarine"  
+  ) %>%
+  formatStyle(
+    'women_expression_rate', 
+    backgroundColor = "aquamarine"  
+  )
+```
+
+   The second table we will analyse is this one. It should help us do the comparison between the speaking time of women and that of men. The columns that will be used are Editeur, women_speech_duration_2020 (in seconds) and men_speech_duration_2020 (in seconds). 
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE}
+datatable(menwomen_speech,
+          options = list(
+    pageLength = 5,  
+    searchHighlight = TRUE,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+) %>%
+  formatStyle(
+    'Editeur', 
+    backgroundColor = "aquamarine"  
+  ) %>%
+  formatStyle(
+    'women_speech_duration_2020', 
+    backgroundColor = "aquamarine"  
+  ) %>%
+  formatStyle(
+    'men_speech_duration_2020', 
+    backgroundColor = "aquamarine"  
+  )
+
+```
+
+   The final table is the following. Thanks to this table, we should be able to know in which genres women speak the most in the tv or the radio. The columns used are genre, women_speech_duration_2020 (seconds), women_speech_duration_2019 (seconds). 
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE}
+datatable(genre_speech,
+          options = list(
+    pageLength = 5,  
+    searchHighlight = TRUE,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+) %>%
+  formatStyle(
+    'genre', 
+    backgroundColor = "aquamarine"  
+  ) %>%
+  formatStyle(
+    'women_speech_duration_2020', 
+    backgroundColor = "aquamarine"  
+  ) %>%
+  formatStyle(
+    'women_speech_duration_2019', 
+    backgroundColor = "aquamarine"  
+  )
+    
+```
+
+
+## Analysis 
+
+### Evolution of women involvement in the medias.
+
+   To respond to this question we decided to make a scatter given the amount of data we had to use. In the y axis we have the women speech rate in % and in the x axis we have the years when the datas were collected. The radio channels are colored in green and the tv channels are colored in blue. 
+
+```{r,include=FALSE}
+library(plotly)
+library(gapminder)
+```
+```{r,echo=FALSE,message=FALSE, warning=FALSE}
+fig <-  year_speech%>%
+  plot_ly(
+    x = ~year, 
+    y = ~women_expression_rate, 
+    color = ~media_type, 
+    frame = ~channel_name, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  )
+fig <- fig %>% layout(
+    xaxis = list(
+      type = "log"
+    )
+)
+fig <- fig %>%    animation_slider(
+    currentvalue = list( media_type='tv', font = list(color="blue"))
+  )
+
+fig
+```
+
+   We can see that overall, women speech rate increased over the years in most channels. France inter's women speech in 1995 was about 23% compared to  almost 35% as of 2019
+The channels that started more recently tend to be the ones with the highest women speech rate. Like Cherie FM for exemple, who for now has the highest women speech rate. 
+Canal+ Sport is the one that has the lowest women speech rate for women which can be explained by the fact that sport is a domain more appealing to men. However women still need representation in it.
+   Even though women speech rate has gotten better over the years, it is still less than 50% in most cases. This means that men tand to talk generally more than women in French media.
+
+### Comparison to men's speaking time.
+
+   To be able to view the difference between men and women speech in French media, we decided to use a grouped bar chart. The color used is pink for women and blue for men. In the y axis, we have the speech rate, in 2020, of both men and women in seconds. In the x axis, we have the names of the channels where the datas were collected. 
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE}
+fig <- menwomen_speech %>%
+  plot_ly() %>%
+  add_bars(
+    x = ~Editeur, 
+    y = ~women_speech_duration_2020, 
+    name = "women", 
+    color = I("#ED68ED")
+  ) %>%
+  add_bars(
+    x = ~Editeur, 
+    y = ~men_speech_duration_2020, 
+    name = "men", 
+    color = I("#8494FF")
+  ) 
+
+fig <- fig %>% layout(
+    xaxis = list(
+      title = "Channel"
+    ),
+    yaxis = list(
+      title = "Women/Men speech (2020)"
+    ),
+    barmode = "group"
+)
+
+fig
+```
+
+   We can see that almost in every channels, men get to speak more than women. The difference tends to be great, like in RMC where men have 7 million more seconds (which represents almost 1944 hours) of speech than women. The radio channel Fip is the only one where we get to hear women more than men, but it also the one that has the least amount of total speech compared to the other channels.  
+
+### The genre where women are present the most. 
+
+   We used a bar chart to visualize the genre were women are the most present. In the x axis, we have the different genres and in the y axis we have the amount of time in seconds women spoke in these genre.  
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE}
+
+fig <- genre_speech %>%
+  plot_ly(
+    x = ~genre, 
+    y = ~women_speech_duration_2020,
+    color = ~genre, 
+    type = 'bar',
+    mode = 'markers'
+  )
+fig <- fig %>% layout(
+    xaxis = list(
+      showticklabels = FALSE,
+      title = "Genre"
+    ),
+    yaxis = list(
+      title = "Women Speech Duration (2020)",
+      type = "log"
+    )
+)
+fig
+```
+
+   Thanks to this representation, we found out that in 2020 women spoke the most in magazine types of media. This can be explained by the fact that women tends to be more present in this media, be it for cooking, housekeeping or other things covered in it. The second genre where women are heard the most are the information genre, be it for the journal or the magazines. If we combine the information bars together as well as the "divertissement" bars, they speak the least documentaries and sports.
+
+   Here is a small comparion the 2019 data using the grouped bar chart.
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE}
+fig <- genre_speech %>%
+  plot_ly() %>%
+  add_bars(
+    x = ~genre, 
+    y = ~women_speech_duration_2020, 
+    name = "2020", 
+    color = I("#C77CFF")
+  ) %>%
+  add_bars(
+    x = ~genre, 
+    y = ~women_speech_duration_2019, 
+    name = "2019", 
+    color = I("#8494FF")
+  ) 
+
+fig <- fig %>% layout(
+    xaxis = list(
+      title = "Genre"
+    ),
+    yaxis = list(
+      title = "Women Speech Duration"
+    ),
+    barmode = "group"
+)
+
+fig
+```
+   We see that overall, women got to speak more on certain genres which shows a small evolution in their speaking time. We see that especially in the sport genre where they were heard more on 2020. During 2019, women spoke the most in the journal. Its place was switched in 2020 with the magazine. 
+
+### Conclusion
+
+   To conclude, there was in fact an evolution in the amount of time women were allowed to speak in french media, be it in the radio or in the tv. However men are still the ones that get the most amount of speech almost everywhere in tv or the radio. The difference can can be big even in genres where women speak the most.
+
+
+### Sources
+
+   All the datas were taken from the Open data university website on the section "Les Françaises et Français et l'audiovisuel. The datas were found in "Temps de parole des hommes et des femmes à la télévision et à la radio" and in "Temps de parole des femmes et des hommes dans les programmes ayant fait l'objet d’une déclaration au CSA pour son rapport portant sur la représentation des femmes à la télévision et la radio"
+   
+  * The datas were downloaded in the "Moyenne par année et par chaînes", "temps de parole par genre de programme" and "temps de paroles par chaîne" sections 
+  
